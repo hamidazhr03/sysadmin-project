@@ -175,6 +175,8 @@ WantedBy=multi-user.target
 
     sudo vim /etc/systemd/system/node_exporter.service
 
+...
+
 [Unit]
 Description=Node Exporter
 Wants=network-online.target
@@ -195,6 +197,7 @@ ExecStart=/usr/local/bin/node_exporter \
 [Install]
 WantedBy=multi-user.target
 
+...
 
      sudo systemctl enable node_exporter
 
@@ -206,9 +209,9 @@ WantedBy=multi-user.target
 
 ...
 
-- job_name: node_export
+  - job_name: node
     static_configs:
-      - targets: ["localhost:9100"]
+      - targets: ['localhost:9100']
 
 ...
 
