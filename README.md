@@ -46,26 +46,24 @@ Akses Apache dengan address IP server
 Install the prerequisite packages:
 
     sudo apt-get install -y apt-transport-https software-properties-common wget
-    
+
+Import the GPG key:
+
     sudo mkdir -p /etc/apt/keyrings/
     
-    wget -q -O - https://apt.grafana.com/gpg.key | gpg --dearmor | sudo tee    /etc/apt/keyrings/grafana.gpg > /dev/null
+    wget -q -O - https://apt.grafana.com/gpg.key | gpg --dearmor | sudo tee /etc/apt/keyrings/grafana.gpg > /dev/null
 
-    echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main" | sudo tee -a /etc/apt/sources.list.d/grafana.list
+To add a repository for stable releases, run the following command:
 
-    echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com  beta main" | sudo tee -a /etc/apt/sources.list.d/grafana.list
+    echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main" | sudo tee -a /etc/apt/sources.list.d/grafana.list  
 
-Updates the list of available packages
+Run the following command to update the list of available packages:
 
     sudo apt-get update
 
-Installs the latest OSS release:
+To install Grafana OSS, run the following command:
 
-    sudo apt-get install grafana
-
-Installs the latest Enterprise release:
-
-    sudo apt-get install grafana-enterprise
+    sudo apt-get install grafana 
 
 To start the service, run the following commands:
 
@@ -75,146 +73,184 @@ To start the service, run the following commands:
     
     sudo systemctl status grafana-server
 
+To verify that the service is running, run the following command:
+
     sudo systemctl status grafana-server
 
-Configure the Grafana server to start at boot using systemd
+To configure the Grafana server to start at boot, run the following command:
 
-    sudo systemctl enable grafana-server.service
+    sudo systemctl enable -- now grafana-server.service
 
-Alternatively, create a file in /etc/systemd/system/grafana server.service.d/override.conf
+    sudo systemctl status grafana-server
 
-    sudo systemctl edit grafana-server.service
+    sudo lsof -n -P -i | grep grafana
 
-Add the following additional settings to grant the CAP_NET_BIND_SERVICE capability.
-
-    [Service]
-    CapabilityBoundingSet=CAP_NET_BIND_SERVICE
-    AmbientCapabilities=CAP_NET_BIND_SERVICE
-
-    PrivateUsers=false
-    Restart the Grafana server using systemd
-
-    sudo systemctl restart grafana-server
-
-To start the Grafana server, run the following commands:
-
-    sudo service grafana-server start
-    
-    sudo service grafana-server status
-
-    sudo service grafana-server status
-
-    sudo update-rc.d grafana-server defaults
-
-    sudo service grafana-server restart
+akses port localhot:3000
 
 
 # =====> Instalasi Prometheus & Node-Exporter <=====
  
-    wget https://github.com/prometheus/prometheus/releases/download/v2.32.1/prometheus-2.32.1.linux-amd64.tar.gz
+     wget https://github.com/prometheus/prometheus/releases/download/v2.49.0-rc.1/prometheus-2.49.0-rc.1.linux-amd64.tar.gz
 
-    tar -xvf prometheus-2.32.1.linux-amd64.tar.gz
+extract file
 
-    sudo mkdir -p /data /etc/prometheus
+    tar xvf prometheus-2.49.0-rc.1.linux-amd64.tar.gz
 
-    cd prometheus-2.32.1.linux-amd64
+masuk ke direktori prometheus
+
+    cd prometheus-2.49.0-rc.1.linux-amd64/
+
+menjalankan prometheus dengan systemd
+
+membuat user
+
+    sudo groupadd --system prometheus
+	  
+    sudo useradd --system -s /sbin/nologin -g prometheus prometheus
+
+    ls -l
+    
+pindahkan file
 
     sudo mv prometheus promtool /usr/local/bin/
 
-    sudo mv prometheus.yml /etc/prometheus/prometheus.yml
+    which prometheus
 
-    sudo chown -R prometheus:prometheus /etc/prometheus/ /data/
+    which promtool
+    
+membuat direktori
 
-    sudo vim /etc/systemd/system/prometheus.service
+    ls -l 
+    
+    sudo mkdir /etc/prometheus
+    
+    sudo mkdir /var/lib/prometheus
 
+    ls -l /var/lib/
+
+merubah owner prometheus
+
+    sudo chown -R prometheus:prometheus /var/lib/prometheus/
+
+memindahkan file
+
+    ls -l
+    
+    sudo mv consoles/ console_libraries/ prometheus.yml /etc/prometheus/
+
+    
+    cd /etc/promethues/
+
+masuk ke pengaturan prometheus hapus beberapa konfigurasi untuk disederhanakan.
+
+  	sudo nano prometheus.yml
+
+
+membuatkan service daemon
+
+  	sudo nano /etc/systemd/system/prometheus.service
+
+copy konfigurasi
 ...
 
 [Unit]
 Description=Prometheus
+Documentation=htt[s://prometheus.io/docs/introduction/overview/
 Wants=network-online.target
 After=network-online.target
-
-StartLimitIntervalSec=500
-StartLimitBurst=5
 
 [Service]
 User=prometheus
 Group=prometheus
 Type=simple
-Restart=on-failure
-RestartSec=5s
-ExecStart=/usr/local/bin/prometheus \
-  --config.file=/etc/prometheus/prometheus.yml \
-  --storage.tsdb.path=/data \
-  --web.console.templates=/etc/prometheus/consoles \
-  --web.console.libraries=/etc/prometheus/console_libraries \
-  --web.listen-address=0.0.0.0:9090 \
-  --web.enable-lifecycle
+WxwcStart=/usr/local/bin/prometheus \
+--config.file /etc/prometheus/prometheus.yml \
+--storage.tsdb.path /var/lib/prometheus/ \
+--web.console.templates=/etc/prometheus/consoles \
+--web.console.libraries=/etc/prometheus/console_libraries
 
 [Install]
 WantedBy=multi-user.target
 
 ...
 
-    sudo systemctl enable prometheus
+    sudo systectl daemon-reload
 
-    sudo systemctl start prometheus
+  	sudo systemctl status prometheus
 
-    sudo systemctl status prometheus
+  	sudo systemctl enable --now prometheus
+
+  	sudo systemctl status prometheus.service
+
+  	sudo lsof -n -i | grep prometheus
+
+akses prometheus lewat web
+
+	  localhost:9090
 
 
 # =====> Instalasi Node Exporter <=====
 
-    wget https://github.com/prometheus/node_exporter/releases/download/v1.3.1/node_exporter-1.3.1.linux-amd64.tar.gz
+    wget https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz
 
-    tar -xvf node_exporter-1.3.1.linux-amd64.tar.gz
+extract file
 
-    sudo mv \ node_exporter-1.3.1.linux-amd64/node_exporter \ /usr/local/bin/
+    tar xvf node_exporter-1.7.0.linux-amd64.tar.gz
 
-    rm -rf node_exporter*
+masuk ke node-exporter
 
-    sudo vim /etc/systemd/system/node_exporter.service
+    cd node_exporter-1.7.0.linux-amd64
+
+    ls -l
+
+    sudo mv node_exporter /usr/local/bin/
+
+    which node_exporter
+
+membuat service daemon
+
+	sudo nano /etc/systemd/system/node-exporter/service
 
 ...
 
 [Unit]
-Description=Node Exporter
-Wants=network-online.target
-After=network-online.target
-
-StartLimitIntervalSec=500
-StartLimitBurst=5
+Description=Prometheus exporter for machine metrics
 
 [Service]
-User=node_exporter
-Group=node_exporter
-Type=simple
-Restart=on-failure
-RestartSec=5s
-ExecStart=/usr/local/bin/node_exporter \
-    --collector.logind
+Restart=always
+User=prometheus
+ExecStart=/usr/local/bin/node_exporter
+ExecReload=/bin/kill -HUP $MAINPID
+TimeoutStopSec=20s
+SendSIGKILL=no
 
 [Install]
 WantedBy=multi-user.target
 
 ...
 
-     sudo systemctl enable node_exporter
+    sudo systemctl daemon-reload
+    
+    sudo systemctl status node-exporter.service
+    
+    sudo systemtl enable --now node-exporter.service
 
-     sudo systemctl start node_exporter
+    sudo systemctl status node-exporter.service
+    
+    sudo lsof -n -i | grep node
 
-     sudo systemctl status node_exporter
 
-     sudo vim /etc/prometheus/prometheus.yml
+akses metrics
 
-...
+  	localhost:9100
 
-  - job_name: node
-    static_configs:
-      - targets: ['localhost:9100']
+sesuaikan konfigurasi
 
-...
+    sudo nano /etc/prometheus/prometheus.yml
 
-    promtool check config /etc/prometheus/prometheus.yml
+tambahkan job node-exporter dan port 9100.
 
-    curl -X POST http://localhost:9090/-/reload      
+
+    sudo systemctl restart prometheus
+
+	  sudo systemctl status prometheus 
