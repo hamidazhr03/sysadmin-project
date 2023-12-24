@@ -139,7 +139,7 @@ memindahkan file
     sudo mv consoles/ console_libraries/ prometheus.yml /etc/prometheus/
 
     
-    cd /etc/promethues/
+    cd /etc/prometheus/
 
 masuk ke pengaturan prometheus hapus beberapa konfigurasi untuk disederhanakan.
 
@@ -163,7 +163,7 @@ After=network-online.target
 User=prometheus
 Group=prometheus
 Type=simple
-WxwcStart=/usr/local/bin/prometheus \
+ExecStart=/usr/local/bin/prometheus \
 --config.file /etc/prometheus/prometheus.yml \
 --storage.tsdb.path /var/lib/prometheus/ \
 --web.console.templates=/etc/prometheus/consoles \
@@ -174,7 +174,7 @@ WantedBy=multi-user.target
 
 ...
 
-    sudo systectl daemon-reload
+    	sudo systemctl daemon-reload
 
   	sudo systemctl status prometheus
 
@@ -199,7 +199,7 @@ extract file
 
 masuk ke node-exporter
 
-    cd node_exporter-1.7.0.linux-amd64
+    cd node_exporter-1.7.0.linux-amd64/
 
     ls -l
 
@@ -209,8 +209,9 @@ masuk ke node-exporter
 
 membuat service daemon
 
-	sudo nano /etc/systemd/system/node-exporter/service
+	sudo nano /etc/systemd/system/node-exporter.service
 
+copy konfigurasi
 ...
 
 [Unit]
@@ -233,7 +234,7 @@ WantedBy=multi-user.target
     
     sudo systemctl status node-exporter.service
     
-    sudo systemtl enable --now node-exporter.service
+    sudo systemctl enable --now node-exporter.service
 
     sudo systemctl status node-exporter.service
     
