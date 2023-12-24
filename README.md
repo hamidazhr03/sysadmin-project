@@ -3,7 +3,7 @@ Nama  :   Hamid Azhar Abdillah
 NIM   :   22.83.0925
 Kelas :   TK03 - SysAdmin
 
-# Final Project SysAdmin membuat sebuah web server dengan instalasi beberapa layanan server seperti berikut :
+# Final Project SysAdmin membuat sebuah web monitoring server dengan instalasi beberapa layanan server seperti berikut :
 
 1. Apache2
 2. Grafana
